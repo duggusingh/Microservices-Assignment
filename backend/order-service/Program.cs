@@ -36,6 +36,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseCors("AllowDurgeshFrontend")
 app.UseAuthorization();
+app.UseMiddleware<GlobalExceptionHandler>()
 app.MapControllers();
 
 app.Run();
