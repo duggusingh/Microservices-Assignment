@@ -1,0 +1,18 @@
+header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+main {
+  min-height: 80vh;
+  padding-top: 30px;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  background: #333;
+  color: white;
+  margin-top: 40px;
+}
