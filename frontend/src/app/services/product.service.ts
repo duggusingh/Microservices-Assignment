@@ -1,27 +1,25 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { Observable } from 'rxjs';
 import { Product } from '../models/product.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
-  constructor(private http: HttpClient) {}
+  private apiUrl = environment.productApiUrl;
+  constructor(private http: HttpClient) { }
 
-  getAll() {
-    return this.http.get<Product[]>(environment.productApiUrl);
+  getProducts(): Observable<Product[]> {
+    return this.http.get<Product[]>(this.apiUrl);
   }
 
-  create(product: Product) {
-    return this.http.post<Product>(environment.productApiUrl, product);
+  createProduct(product: Product): Observable<Product> {
+    return this.http.post<Product>(this.apiUrl, product);
   }
 
-  // The 'Must Have' Image Upload Logic
-  uploadImage(id: number, file: File) {
+  uploadImage(productId: number, file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<{ imageUrl: string }>(
-      `${environment.productApiUrl}/${id}/image`, 
-      formData
-    );
+    return this.http.post(`${this.apiUrl}/${productId}/image`, formData);
   }
-      }
+}
