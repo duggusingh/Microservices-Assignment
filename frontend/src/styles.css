@@ -1,0 +1,78 @@
+/* Global Reset and Typography */
+body { 
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+  margin: 0; 
+  padding: 0; 
+  background-color: #f8f9fa; 
+  color: #333;
+}
+
+/* Layout Containers */
+.container { 
+  max-width: 1100px; 
+  margin: 0 auto; 
+  padding: 20px; 
+}
+
+/* Header & Navigation Styles */
+header {
+  background-color: #0078d4; /* Microsoft Azure Blue */
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+  font-weight: 500;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* Card Grid System for Product Catalog */
+.product-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+  gap: 25px; 
+  margin-top: 20px;
+}
+
+.card { 
+  background: white; 
+  padding: 15px; 
+  border-radius: 10px; 
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
+  transition: transform 0.2s;
+  text-align: center;
+}
+
+.card:hover { transform: translateY(-5px); }
+
+/* Form Elements */
+input, select {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+button:hover { background-color: #005a9e; }
