@@ -1,46 +1,55 @@
 using Xunit;
 using Moq;
+using Moq.Protected;
+using System.Net;
+using System.Text.Json;
+using Microsoft.EntityFrameworkCore;
 using OrderService.Services;
 using OrderService.Models;
 using OrderService.Data;
-using Microsoft.EntityFrameworkCore;
-using Moq.Protected;
-using System.Net;
+using Microsoft.Extensions.Configuration;
 
 namespace OrderService.Tests
 {
     public class OrderServiceTests
     {
-        [Fact]
-        public async Task PlaceOrder_ShouldFail_WhenStockIsInsufficient()
+        private readonly Mock<HttpMessageHandler> _httpHandlerMock;
+        private readonly Mock<IConfiguration> _configMock;
+        private readonly OrderDbContext _dbContext;
+        private readonly OrderService _service;
+
+        public OrderServiceTests()
         {
-            // Setup In-Memory Database
+            // 1. Setup In-Memory Database for isolation
             var options = new DbContextOptionsBuilder<OrderDbContext>()
-                .UseInMemoryDatabase(databaseName: "DurgeshTestDb_1")
+                .UseInMemoryDatabase(databaseName: $"DurgeshTestDb_{Guid.NewGuid()}")
                 .Options;
-            using var context = new OrderDbContext(options);
+            _dbContext = new OrderDbContext(options);
 
-            // Mock HTTP Client to return Low Stock
-            var handlerMock = new Mock<HttpMessageHandler>();
-            handlerMock.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = JsonContent.Create(new ProductDto(1, "Laptop", 1000, 0)) // 0 Stock
-                });
-            var httpClient = new HttpClient(handlerMock.Object);
-            
-            var configMock = new Mock<IConfiguration>();
-            configMock.Setup(c => c["ProductServiceSettings:BaseUrl"]).Returns("http://fake-url");
+            // 2. Mock Configuration (BaseUrl)
+            _configMock = new Mock<IConfiguration>();
+            _configMock.Setup(c => c["ProductServiceSettings:BaseUrl"]).Returns("http://test-url");
 
-            var service = new OrderService(httpClient, context, configMock.Object);
-            
-            var order = new Order { OrderItems = new List<OrderItem> { new OrderItem { ProductId = 1, Qty = 1 } } };
-            
-            var result = await service.PlaceOrderAsync(order);
+            // 3. Mock HTTP Handler
+            _httpHandlerMock = new Mock<HttpMessageHandler>();
+            var httpClient = new HttpClient(_httpHandlerMock.Object);
 
-            Assert.False(result.Success);
+            // 4. Initialize Service
+            _service = new OrderService(httpClient, _dbContext, _configMock.Object);
         }
-    }
-}
+
+        // TEST 1: SUCCESS SCENARIO
+        [Fact]
+        public async Task PlaceOrder_ShouldReturnTrue_WhenStockIsSufficient()
+        {
+            // Arrange
+            var productId = 1;
+            var order = new Order
+            {
+                CustomerName = "Durgesh Test",
+                OrderItems = new List<OrderItem> { new OrderItem { ProductId = productId, Qty = 2 } }
+            };
+
+            // Mock Product Service Response: Stock is 10 (Sufficient)
+            var productResponse = new ProductDto(productId, "Laptop", 1000, 10);
+            
