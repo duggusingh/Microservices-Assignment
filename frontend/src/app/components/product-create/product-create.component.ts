@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { ProductService } from '../../services/product.service';
 import { Product } from '../../models/product.model';
-import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-create',
@@ -11,21 +10,18 @@ export class ProductCreateComponent {
   product: Product = { name: '', price: 0, stockQty: 0 };
   selectedFile: File | null = null;
 
-  constructor(private productService: ProductService, private router: Router) {}
+  constructor(private productService: ProductService) {}
 
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
   }
 
-  onSubmit() {
-    // 1. Create Product
-    this.productService.create(this.product).subscribe(createdProduct => {
-      // 2. Upload Image if selected
-      if (this.selectedFile && createdProduct.productId) {
-        this.productService.uploadImage(createdProduct.productId, this.selectedFile)
-          .subscribe(() => this.router.navigate(['/products']));
-      } else {
-        this.router.navigate(['/products']);
+  saveProduct() {
+    this.productService.createProduct(this.product).subscribe(res => {
+      if (this.selectedFile && res.productId) {
+        this.productService.uploadImage(res.productId, this.selectedFile).subscribe(() => {
+          alert('Product and Image saved successfully!');
+        });
       }
     });
   }
