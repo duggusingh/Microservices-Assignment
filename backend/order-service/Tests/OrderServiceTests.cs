@@ -1,55 +1,124 @@
-using Xunit;
 using Moq;
 using Moq.Protected;
 using System.Net;
-using System.Text.Json;
+using System.Net.Http.Json;
+using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using OrderService.Services;
 using OrderService.Models;
 using OrderService.Data;
-using Microsoft.Extensions.Configuration;
+using OrderService.Services;
+using Xunit;
 
 namespace OrderService.Tests
 {
     public class OrderServiceTests
     {
-        private readonly Mock<HttpMessageHandler> _httpHandlerMock;
-        private readonly Mock<IConfiguration> _configMock;
+        private readonly Mock<HttpMessageHandler> _msgHandlerMock;
         private readonly OrderDbContext _dbContext;
-        private readonly OrderService _service;
+        private readonly IConfiguration _config;
 
         public OrderServiceTests()
         {
-            // 1. Setup In-Memory Database for isolation
+            _msgHandlerMock = new Mock<HttpMessageHandler>();
+            
+            // In-Memory Database for Testing
             var options = new DbContextOptionsBuilder<OrderDbContext>()
-                .UseInMemoryDatabase(databaseName: $"DurgeshTestDb_{Guid.NewGuid()}")
+                .UseInMemoryDatabase(databaseName: "DurgeshOrderTestDb")
                 .Options;
             _dbContext = new OrderDbContext(options);
 
-            // 2. Mock Configuration (BaseUrl)
-            _configMock = new Mock<IConfiguration>();
-            _configMock.Setup(c => c["ProductServiceSettings:BaseUrl"]).Returns("http://test-url");
-
-            // 3. Mock HTTP Handler
-            _httpHandlerMock = new Mock<HttpMessageHandler>();
-            var httpClient = new HttpClient(_httpHandlerMock.Object);
-
-            // 4. Initialize Service
-            _service = new OrderService(httpClient, _dbContext, _configMock.Object);
+            // Mock Configuration
+            var inMemoryConfig = new Dictionary<string, string> {
+                {"ProductServiceSettings:BaseUrl", "http://localhost:8081"}
+            };
+            _config = new ConfigurationBuilder().AddInMemoryCollection(inMemoryConfig).Build();
         }
 
-        // TEST 1: SUCCESS SCENARIO
         [Fact]
         public async Task PlaceOrder_ShouldReturnTrue_WhenStockIsSufficient()
         {
             // Arrange
             var productId = 1;
-            var order = new Order
-            {
-                CustomerName = "Durgesh Test",
-                OrderItems = new List<OrderItem> { new OrderItem { ProductId = productId, Qty = 2 } }
+            var productDto = new { ProductId = productId, StockQty = 10 };
+            
+            SetupMockHttpMessage(HttpStatusCode.OK, productDto);
+
+            var httpClient = new HttpClient(_msgHandlerMock.Object);
+            var service = new OrderService.Services.OrderService(httpClient, _dbContext, _config);
+            
+            var order = new Order { 
+                CustomerName = "Durgesh", 
+                OrderItems = new List<OrderItem> { new OrderItem { ProductId = productId, Qty = 2 } } 
             };
 
-            // Mock Product Service Response: Stock is 10 (Sufficient)
-            var productResponse = new ProductDto(productId, "Laptop", 1000, 10);
+            // Act
+            var result = await service.PlaceOrderAsync(order);
+
+            // Assert
+            Assert.True(result.Success);
+            Assert.Equal("Order placed successfully.", result.Message);
+        }
+
+        [Fact]
+        public async Task PlaceOrder_ShouldReturnFalse_WhenStockIsInsufficient()
+        {
+            // Arrange
+            var productId = 2;
+            var productDto = new { ProductId = productId, StockQty = 1 }; // Only 1 in stock
             
+            SetupMockHttpMessage(HttpStatusCode.OK, productDto);
+
+            var httpClient = new HttpClient(_msgHandlerMock.Object);
+            var service = new OrderService.Services.OrderService(httpClient, _dbContext, _config);
+            
+            var order = new Order { 
+                CustomerName = "Durgesh", 
+                OrderItems = new List<OrderItem> { new OrderItem { ProductId = productId, Qty = 5 } } // Ordering 5
+            };
+
+            // Act
+            var result = await service.PlaceOrderAsync(order);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal("Insufficient stock", result.Message);
+        }
+
+        [Fact]
+        public async Task PlaceOrder_ShouldReturnFalse_WhenProductDoesNotExist()
+        {
+            // Arrange
+            SetupMockHttpMessage(HttpStatusCode.NotFound, null);
+
+            var httpClient = new HttpClient(_msgHandlerMock.Object);
+            var service = new OrderService.Services.OrderService(httpClient, _dbContext, _config);
+            
+            var order = new Order { 
+                CustomerName = "Durgesh", 
+                OrderItems = new List<OrderItem> { new OrderItem { ProductId = 999, Qty = 1 } } 
+            };
+
+            // Act
+            var result = await service.PlaceOrderAsync(order);
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal("Product invalid or service unavailable", result.Message);
+        }
+
+        private void SetupMockHttpMessage(HttpStatusCode status, object content)
+        {
+            _msgHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                    "SendAsync",
+                    ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>()
+                )
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = status,
+                    Content = content != null ? JsonContent.Create(content) : null
+                });
+        }
+    }
+}
