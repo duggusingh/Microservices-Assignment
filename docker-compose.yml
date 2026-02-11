@@ -1,0 +1,21 @@
+version: '3.8'
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=Durgesh@Singh#2026
+    ports:
+      - "1433:1433"
+
+  product-service:
+    build: ./backend/product-service
+    depends_on:
+      - mssql
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=mssql;Database=DurgeshProductDb;User Id=sa;Password=Durgesh@Singh#2026;TrustServerCertificate=True
+      - AzureBlob__ConnectionString=UseDevelopmentStorage=true
+      - AzureBlob__ContainerName=durgesh-product-images
+    ports:
+      - "8081:8080"
+      
