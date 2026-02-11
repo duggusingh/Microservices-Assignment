@@ -2,21 +2,26 @@ using Azure.Storage.Blobs;
 
 namespace ProductService.Services
 {
-    public class BlobService(BlobServiceClient blobClient, IConfiguration config) : IBlobService
+    public interface IBlobService { Task<string> UploadAsync(IFormFile file); }
+
+    public class BlobService(IConfiguration config) : IBlobService
     {
         public async Task<string> UploadAsync(IFormFile file)
         {
-            var containerName = config["AzureBlob:ContainerName"]; 
-            var container = blobClient.GetBlobContainerClient(containerName);
-            await container.CreateIfNotExistsAsync();
+            var connectionString = config["AzureBlob:ConnectionString"];
+            var containerName = config["AzureBlob:ContainerName"];
+            
+            var blobServiceClient = new BlobServiceClient(connectionString);
+            var containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            await containerClient.CreateIfNotExistsAsync();
 
-            var blobName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-            var client = container.GetBlobClient(blobName);
+            var blobName = $"{Guid.NewGuid()}_{file.FileName}";
+            var blobClient = containerClient.GetBlobClient(blobName);
 
             await using var stream = file.OpenReadStream();
-            await client.UploadAsync(stream, true);
+            await blobClient.UploadAsync(stream, true);
 
-            return client.Uri.ToString(); // Returns the ImageUrl
+            return blobClient.Uri.ToString();
         }
     }
 }
