@@ -1,0 +1,7 @@
+<div>
+  <h2>Confirm Order</h2>
+  <input [(ngModel)]="order.customerName" placeholder="Your Name">
+  <input type="number" [(ngModel)]="order.orderItems[0].qty" min="1">
+  <button (click)="submitOrder()">Place Order</button>
+  <p>{{message}}</p>
+</div>
