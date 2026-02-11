@@ -34,9 +34,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseAuthorization();
 app.UseCors("AllowDurgeshFrontend")
+app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
