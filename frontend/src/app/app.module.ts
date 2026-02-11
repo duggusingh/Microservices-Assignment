@@ -2,7 +2,9 @@ import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+
+// 1. Import the Routing Module you created
+import { AppRoutingModule } from './app-routing.module'; 
 
 import { AppComponent } from './app.component';
 import { ProductListComponent } from './components/product-list/product-list.component';
@@ -11,9 +13,9 @@ import { OrderCreateComponent } from './components/order-create/order-create.com
 
 @NgModule({
   declarations: [
-    AppComponent, 
-    ProductListComponent, 
-    ProductCreateComponent, 
+    AppComponent,
+    ProductListComponent,
+    ProductCreateComponent,
     OrderCreateComponent
   ],
   imports: [
@@ -21,13 +23,9 @@ import { OrderCreateComponent } from './components/order-create/order-create.com
     HttpClientModule,
     FormsModule,
     ReactiveFormsModule,
-    RouterModule.forRoot([
-      { path: '', component: ProductListComponent },
-      { path: 'add-product', component: ProductCreateComponent },
-      { path: 'place-order', component: OrderCreateComponent }
-    ])
+    AppRoutingModule // 2. Add it here to the imports array
   ],
+  providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
 export class AppModule { }
