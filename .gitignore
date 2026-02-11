@@ -1,7 +1,32 @@
+# .NET / Visual Studio
 bin/
 obj/
-node_modules/
+*.user
+*.userosscache
+*.sln.docuser
 .vs/
 .vscode/
+
+# Build and Publish
+publish/
+out/
 appsettings.Development.json
-*.user
+
+# Docker
+.dockerignore
+
+# Node / Angular (Frontend)
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Secrets and Environment
+.env
+*.pfx
