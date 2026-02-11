@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { HttpClientModule } from '@angular/common/http';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule, Routes } from '@angular/router';
 
 import { AppComponent } from './app.component';
@@ -9,11 +9,12 @@ import { ProductListComponent } from './components/product-list/product-list.com
 import { ProductCreateComponent } from './components/product-create/product-create.component';
 import { OrderCreateComponent } from './components/order-create/order-create.component';
 
+// Defining basic routes for navigation
 const routes: Routes = [
-  { path: 'products', component: ProductListComponent },
+  { path: '', component: ProductListComponent },
   { path: 'add-product', component: ProductCreateComponent },
   { path: 'place-order', component: OrderCreateComponent },
-  { path: '', redirectTo: '/products', pathMatch: 'full' }
+  { path: '**', redirectTo: '' }
 ];
 
 @NgModule({
@@ -25,9 +26,10 @@ const routes: Routes = [
   ],
   imports: [
     BrowserModule,
-    HttpClientModule,
-    FormsModule,
-    RouterModule.forRoot(routes)
+    HttpClientModule, // Required for API communication with .NET services
+    FormsModule,      // Required for template-driven forms
+    ReactiveFormsModule, // Required for reactive forms (image uploads)
+    RouterModule.forRoot(routes) // Sets up the routing for the SPA
   ],
   providers: [],
   bootstrap: [AppComponent]
