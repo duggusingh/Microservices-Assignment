@@ -1,14 +1,11 @@
-<div class="container mt-4">
-  <h2>Durgesh Shop - Inventory</h2>
-  <div class="row">
-    <div class="col-md-4" *ngFor="let p of products">
-      <div class="card mb-3">
-        <img [src]="p.imageUrl || 'assets/placeholder.png'" class="card-img-top" alt="{{p.name}}" style="height: 200px; object-fit: cover;">
-        <div class="card-body">
-          <h5 class="card-title">{{ p.name }}</h5>
-          <p class="card-text">Price: ${{ p.price }} | Stock: {{ p.stockQty }}</p>
-        </div>
-      </div>
+<div class="container">
+  <h2>Product Catalog</h2>
+  <div class="product-grid">
+    <div *ngFor="let p of products" class="card">
+      <img [src]="p.imageUrl || 'assets/placeholder.png'" alt="Product Image">
+      <h3>{{p.name}}</h3>
+      <p>Price: ${{p.price}} | Stock: {{p.stockQty}}</p>
+      <button [routerLink]="['/place-order']" [queryParams]="{id: p.productId}">Buy Now</button>
     </div>
   </div>
 </div>
