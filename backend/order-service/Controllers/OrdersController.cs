@@ -26,5 +26,6 @@ namespace OrderService.Controllers
         {
             return await context.Orders.Include(o => o.OrderItems).ToListAsync();
         }
+        
     }
 }
