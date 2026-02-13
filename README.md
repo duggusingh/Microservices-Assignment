@@ -2,7 +2,6 @@
 
 
 ##1. How to run using docker-compose
-
 The entire system is containerized for easy orchestration. To spin up the SQL Server, Backend Services, and Frontend, run the following command in the root directory:
 
 ```bash
