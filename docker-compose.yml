@@ -13,7 +13,7 @@ services:
     networks:
       - durgesh-network
 
-  # Product Microservice
+  # Product Microservices
   product-service:
     build: 
       context: ./backend/product-service
